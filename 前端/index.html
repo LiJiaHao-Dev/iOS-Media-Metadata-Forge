@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>极速编辑器 - Pro</title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="apple-touch-icon" href="favicon.ico">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/piexifjs/1.0.6/piexif.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- ═══ 顶部导航栏 ═══ -->
+    <div class="bg-white px-4 py-3 flex justify-between items-center sticky top-0 z-50 shadow-sm">
+        <div class="flex items-center gap-2">
+            <span class="text-xl cursor-pointer" onclick="location.reload()">🔙</span>
+            <span class="font-bold text-lg">极速编辑器</span>
+        </div>
+        <div class="text-xs text-pink-500 bg-pink-50 px-3 py-1 rounded-full">Pro 无限版</div>
+    </div>
+
+    <!-- ═══ 三模式标签栏 ═══ -->
+    <div class="flex mx-3 mt-4 bg-white rounded-xl p-1 shadow-sm border border-gray-100 gap-1">
+        <button id="tabPhoto" class="flex-1 py-2.5 text-xs font-bold rounded-lg bg-pink-50 text-pink-500 transition-all">📸 照片洗白</button>
+        <button id="tabLive"  class="flex-1 py-2.5 text-xs font-bold rounded-lg text-gray-400 transition-all">✨ 实况照片</button>
+        <button id="tabVideo" class="flex-1 py-2.5 text-xs font-bold rounded-lg text-gray-400 transition-all">🎥 视频处理</button>
+    </div>
+
+    <!-- ════════════════════════════════════════
+         照片 / 视频模式：单文件上传区
+    ════════════════════════════════════════ -->
+    <div id="uploadArea" class="section-card mt-3 p-8 text-center border-2 border-dashed border-pink-200 cursor-pointer bg-pink-50/30 hover:bg-pink-50 transition">
+        <div class="text-4xl text-pink-300 mb-2">+</div>
+        <p id="uploadTitle" class="text-sm text-gray-600 font-bold mb-1">点击上传图片或截屏</p>
+        <p id="uploadSub"   class="text-[10px] text-gray-400">支持 JPG / PNG 等所有格式</p>
+    </div>
+
+    <!-- 照片 / 视频模式：已选文件展示 -->
+    <div id="selectedArea" class="section-card mt-3 hidden">
+        <div class="p-4 flex justify-between items-center border-b border-gray-50">
+            <div class="flex items-center gap-2">
+                <span class="text-xl">✅</span>
+                <span class="font-bold text-sm">已锁定 1 个文件</span>
+            </div>
+            <button id="reselectBtn" class="text-xs text-pink-400 bg-pink-50 px-3 py-1 rounded-full cursor-pointer hover:bg-pink-100 transition">重新选择</button>
+        </div>
+        <div class="p-4 bg-gray-50 flex gap-3 overflow-x-auto hide-scrollbar">
+            <div class="relative w-20 h-20 rounded-lg overflow-hidden border border-gray-200 shrink-0 bg-white shadow-sm flex items-center justify-center">
+                <img id="realThumbnail" class="w-full h-full object-cover">
+            </div>
+        </div>
+    </div>
+
+    <!-- 照片 / 视频模式：隐藏文件输入 -->
+    <input type="file" id="fileInput" class="hidden" accept="image/*">
+
+    <!-- ════════════════════════════════════════
+         实况照片模式：双文件上传区
+    ════════════════════════════════════════ -->
+    <div id="liveUploadArea" class="hidden">
+        <!-- 图片选择卡 -->
+        <div id="livePhotoZone" class="section-card mt-3 mx-0 p-6 text-center border-2 border-dashed border-pink-200 cursor-pointer bg-pink-50/30 hover:bg-pink-50 transition">
+            <div class="text-3xl mb-1">🖼️</div>
+            <p class="text-sm text-gray-600 font-bold">① 点击选择实况图片</p>
+            <p class="text-[10px] text-gray-400 mt-0.5">支持 JPG / PNG / HEIC</p>
+        </div>
+        <!-- 视频选择卡 -->
+        <div id="liveVideoZone" class="section-card mt-2 mx-0 p-6 text-center border-2 border-dashed border-purple-200 cursor-pointer bg-purple-50/30 hover:bg-purple-50 transition">
+            <div class="text-3xl mb-1">🎞️</div>
+            <p class="text-sm text-gray-600 font-bold">② 点击选择实况视频</p>
+            <p class="text-[10px] text-gray-400 mt-0.5">支持 MOV / MP4</p>
+        </div>
+    </div>
+
+    <!-- 实况照片模式：已选文件状态展示 -->
+    <div id="liveSelectedArea" class="section-card mt-3 hidden">
+        <div class="p-4 flex justify-between items-center border-b border-gray-50">
+            <div class="flex items-center gap-2">
+                <span class="text-xl">✅</span>
+                <span id="liveSelectedLabel" class="font-bold text-sm text-gray-700">等待选择文件…</span>
+            </div>
+            <button id="liveReselectBtn" class="text-xs text-pink-400 bg-pink-50 px-3 py-1 rounded-full cursor-pointer hover:bg-pink-100 transition">重选</button>
+        </div>
+        <div class="p-4 bg-gray-50 flex items-center gap-4 overflow-x-auto hide-scrollbar">
+            <!-- 图片缩略图 -->
+            <div class="flex flex-col items-center gap-1 shrink-0">
+                <div class="w-20 h-20 rounded-xl overflow-hidden border-2 border-pink-200 bg-white shadow-sm flex items-center justify-center">
+                    <img  id="liveThumbnailImg"  class="w-full h-full object-cover hidden">
+                    <span id="livePlaceholderImg" class="text-3xl">🖼️</span>
+                </div>
+                <span class="text-[10px] text-gray-400">图片</span>
+            </div>
+            <!-- 连接符 -->
+            <div class="text-pink-300 text-xl shrink-0">⟷</div>
+            <!-- 视频缩略图 -->
+            <div class="flex flex-col items-center gap-1 shrink-0">
+                <div class="w-20 h-20 rounded-xl overflow-hidden border-2 border-purple-200 bg-white shadow-sm flex items-center justify-center">
+                    <img  id="liveThumbnailVid"  class="w-full h-full object-cover hidden">
+                    <span id="livePlaceholderVid" class="text-3xl">🎞️</span>
+                </div>
+                <span class="text-[10px] text-gray-400">视频</span>
+            </div>
+            <!-- UUID 预览 -->
+            <div class="flex flex-col justify-center ml-1 min-w-0 flex-1">
+                <div class="text-[10px] text-gray-400 mb-1">配对 Asset ID</div>
+                <div id="liveAssetIdDisplay" class="text-[9px] text-pink-400 font-mono break-all leading-relaxed">导出时自动生成</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 实况照片模式：隐藏文件输入 -->
+    <input type="file" id="livePhotoInput" class="hidden" accept="image/jpeg,image/jpg,image/png,image/heic,image/heif">
+    <input type="file" id="liveVideoInput" class="hidden" accept="video/mp4,video/quicktime,video/x-m4v">
+
+    <!-- ════════════════════════════════════════
+         共用设置面板（三种模式均显示）
+    ════════════════════════════════════════ -->
+
+    <!-- 设备预设 -->
+    <div class="section-card">
+        <div class="accordion-header text-pink-500" data-target="devicePanel">
+            <span class="mr-2">📱</span> 设备身份预设
+        </div>
+        <div class="accordion-content active" id="devicePanel">
+            <div class="grid grid-cols-2 gap-2 max-h-56 overflow-y-auto custom-scroll pb-2" id="deviceGrid"></div>
+        </div>
+    </div>
+
+    <!-- 时间设置 -->
+    <div class="section-card">
+        <div class="accordion-header" data-target="timePanel">
+            <span class="mr-2 text-pink-400">🕒</span> 时间设置
+        </div>
+        <div class="accordion-content active" id="timePanel">
+            <div class="input-row m-0">
+                <label>拍摄时间</label>
+                <input type="datetime-local" id="editTime">
+            </div>
+            <!-- 隐藏：由设备网格同步写入 -->
+            <div class="grid grid-cols-2 gap-3 mt-3 hidden">
+                <div class="input-row m-0"><input type="text" id="editMake"  value="Apple"></div>
+                <div class="input-row m-0"><input type="text" id="editModel" value="iPhone 17 Pro Max"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 镜头与焦距 -->
+    <div class="section-card">
+        <div class="accordion-header" data-target="lensPanel">
+            <span class="mr-2 text-pink-400">◎</span> 镜头与焦距
+        </div>
+        <div class="accordion-content active" id="lensPanel">
+            <div class="input-row">
+                <label>镜头型号 (自动生成)</label>
+                <input type="text" id="editLens" class="text-pink-500 text-xs font-medium bg-pink-50" readonly>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <div class="input-row m-0">
+                    <label>焦距 (mm)</label>
+                    <input type="number" id="editFocal" value="6.86" step="0.01">
+                </div>
+                <div class="input-row m-0">
+                    <label>35mm等效焦距</label>
+                    <input type="number" id="editFocal35" value="24">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 拍摄参数 -->
+    <div class="section-card">
+        <div class="accordion-header" data-target="paramsPanel">
+            <span class="mr-2 text-pink-400">TT</span> 拍摄参数
+        </div>
+        <div class="accordion-content active" id="paramsPanel">
+            <div class="grid grid-cols-2 gap-3">
+                <div class="input-row m-0"><label>光圈 (f/)</label><input type="number" id="editAperture" value="1.78" step="0.01"></div>
+                <div class="input-row m-0"><label>快门速度 (1/)</label><input type="number" id="editShutter" value="120"></div>
+                <div class="input-row m-0"><label>感光度 (ISO)</label><input type="number" id="editISO" value="100"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 分辨率设置 -->
+    <div class="section-card">
+        <div class="accordion-header" data-target="resPanel">
+            <span class="mr-2 text-pink-400">🔲</span> 分辨率设置
+        </div>
+        <div class="accordion-content active" id="resPanel">
+            <div class="grid grid-cols-2 gap-2 mb-3" id="resolutionGrid">
+                <button class="btn-grid active" data-w="4032" data-h="3024">12MP (4032x3024)</button>
+                <button class="btn-grid" data-w="8064" data-h="6048">48MP (8064x6048)</button>
+            </div>
+            <input type="hidden" id="editWidth" value="4032" data-h="3024">
+        </div>
+    </div>
+
+    <!-- ═══ 底部导出栏 ═══ -->
+    <div class="fixed bottom-0 left-0 right-0 p-3 bg-white/95 backdrop-blur-md border-t border-gray-100 flex gap-3 items-center z-40">
+        <button id="clearBtn" class="flex flex-col items-center justify-center w-16 text-gray-400 cursor-pointer hover:text-gray-600 transition">
+            <span class="text-xl">🗑️</span><span class="text-[10px] mt-1">清空</span>
+        </button>
+        <button id="exportBtn" class="flex-1 bg-gradient-to-r from-pink-400 to-rose-400 text-white font-bold py-3.5 rounded-full shadow-lg shadow-pink-200 active:scale-95 transition-transform cursor-pointer">
+            立即生成专属档案
+        </button>
+    </div>
+
+    <!-- ═══ 加载遮罩 ═══ -->
+    <div id="loadingOverlay" class="fixed inset-0 bg-black/85 z-[10000] hidden flex-col items-center justify-center backdrop-blur-md">
+        <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-pink-500 mb-6"></div>
+        <p id="loadingTitle"    class="text-white font-bold text-lg animate-pulse">正在处理中…</p>
+        <p id="loadingSubtitle" class="text-pink-300 text-xs mt-2">受文件大小影响，请耐心等待勿关闭页面</p>
+    </div>
+
+    <!-- ═══ 照片模式结果弹窗 ═══ -->
+    <div id="resultModal" class="fixed inset-0 bg-black/90 z-[9999] hidden flex-col items-center justify-center p-4 backdrop-blur-sm transition-opacity opacity-0">
+        <div class="w-full max-w-md flex justify-between items-center mb-4 px-2">
+            <span class="text-white font-bold">处理完成 🎉</span>
+            <button id="closeModalBtn" class="text-white/70 hover:text-white bg-white/20 rounded-full w-8 h-8 flex items-center justify-center cursor-pointer">✕</button>
+        </div>
+        <div class="bg-white p-2 rounded-2xl w-full max-w-md shadow-2xl relative">
+            <img id="finalImage" class="w-full rounded-xl object-contain max-h-[60vh] pointer-events-auto">
+        </div>
+        <div class="mt-6 text-center animate-bounce">
+            <p class="text-white font-bold text-lg">👇 苹果用户请长按上方图片 👇</p>
+            <p class="text-pink-300 text-sm mt-1">选择「存储到图像」即可存入相册</p>
+        </div>
+    </div>
+
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <script src="app.js" defer></script>
+</body>
+</html>

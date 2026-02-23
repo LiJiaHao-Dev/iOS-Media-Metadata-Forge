@@ -1,0 +1,101 @@
+:root { 
+    --theme-pink: #ffb6c1; 
+    --bg-gray: #f7f8fa; 
+}
+
+body { 
+    background-color: var(--bg-gray); 
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+    -webkit-tap-highlight-color: transparent; 
+    padding-bottom: 90px; 
+}
+
+.hide-scrollbar::-webkit-scrollbar { display: none; }
+.hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+.custom-scroll::-webkit-scrollbar { width: 4px; }
+.custom-scroll::-webkit-scrollbar-track { background: transparent; }
+.custom-scroll::-webkit-scrollbar-thumb { background: #ffe4e1; border-radius: 4px; }
+
+.section-card { 
+    background: white; 
+    border-radius: 12px; 
+    margin: 12px; 
+    padding: 0; 
+    overflow: hidden; 
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03); 
+}
+
+.accordion-header { 
+    display: flex; 
+    align-items: center; 
+    padding: 14px 16px; 
+    font-size: 15px; 
+    font-weight: 600; 
+    color: #333; 
+    cursor: pointer; 
+    border-bottom: 1px solid #f0f0f0; 
+    user-select: none;
+}
+.accordion-content { padding: 12px 16px; display: none; }
+.accordion-content.active { display: block; animation: fadeIn 0.3s ease-out; }
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.input-row { display: flex; flex-direction: column; margin-bottom: 12px; }
+.input-row label { font-size: 12px; color: #888; margin-bottom: 4px; }
+.input-row input { 
+    width: 100%; 
+    border: 1px solid #eee; 
+    border-radius: 8px; 
+    padding: 8px 12px; 
+    font-size: 14px; 
+    outline: none; 
+    background: #fafafa; 
+    transition: all 0.2s; 
+    color: #333;
+}
+.input-row input:focus { 
+    border-color: var(--theme-pink); 
+    background: white; 
+    box-shadow: 0 0 0 2px rgba(255, 182, 193, 0.2); 
+}
+
+.btn-grid { 
+    border: 1px solid #eee; 
+    border-radius: 20px; 
+    padding: 8px 4px; 
+    font-size: 12px; 
+    color: #555; 
+    text-align: center; 
+    background: white; 
+    transition: 0.2s; 
+    cursor: pointer; 
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.btn-grid.active { 
+    border-color: var(--theme-pink); 
+    background: #fff0f5; 
+    color: #ff6b81; 
+    font-weight: bold; 
+}
+
+.brand-tab { 
+    white-space: nowrap; 
+    padding: 8px 16px; 
+    font-size: 14px; 
+    color: #888; 
+    border-radius: 20px; 
+    transition: 0.2s; 
+    cursor: pointer; 
+}
+.brand-tab.active { 
+    background: #ff4757; 
+    color: white; 
+    font-weight: bold; 
+}
